@@ -304,6 +304,9 @@ def execute_check_in(client, account_name: str, provider_config, headers: dict):
 				print(f'[FAILED] {account_name}: Check-in failed - {error_msg}')
 				return False
 		except json.JSONDecodeError:
+			if provider_config.name == 'anyrouter_direct':
+				print(f'[SUCCESS] {account_name}: Check-in returned HTTP 200 without JSON, treated as successful')
+				return True
 			if 'success' in response.text.lower():
 				print(f'[SUCCESS] {account_name}: Check-in successful!')
 				return True

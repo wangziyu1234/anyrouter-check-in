@@ -1,0 +1,35 @@
+name: AnyRouter Check-in
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Runs at 00:10 UTC, which is 08:10 in Asia/Shanghai.
+    - cron: "10 0 * * *"
+
+jobs:
+  checkin:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Run check-in
+        env:
+          ANYROUTER_BASE_URL: ${{ secrets.ANYROUTER_BASE_URL }}
+          ANYROUTER_COOKIE: ${{ secrets.ANYROUTER_COOKIE }}
+          ANYROUTER_AUTHORIZATION: ${{ secrets.ANYROUTER_AUTHORIZATION }}
+          ANYROUTER_NEW_API_USER: ${{ secrets.ANYROUTER_NEW_API_USER }}
+          ANYROUTER_CHECKIN_PATH: ${{ secrets.ANYROUTER_CHECKIN_PATH }}
+          ANYROUTER_INFO_PATH: ${{ secrets.ANYROUTER_INFO_PATH }}
+          SERVERCHAN_SENDKEY: ${{ secrets.SERVERCHAN_SENDKEY }}
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+        run: python checkin.py
+
+

@@ -1,3 +1,15 @@
+.claude
 .env
-__pycache__/
-*.pyc
+.venv
+__pycache__
+.pytest_cache
+.ruff_cache
+.mypy_cache
+.coverage
+coverage.xml
+htmlcov
+balance_hash.txt
+.browser_profiles
+checkin_screenshots
+
+.DS_Store

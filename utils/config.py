@@ -94,6 +94,18 @@ class AppConfig:
 				use_proxy=False,
 				persist_profile=True,
 			),
+			'anyrouter_direct': ProviderConfig(
+				name='anyrouter_direct',
+				domain='https://anyrouter.top',
+				login_path='/login',
+				sign_in_path='/api/user/sign_in',
+				user_info_path='/api/user/self',
+				api_user_key='new-api-user',
+				bypass_method=None,
+				waf_cookie_names=None,
+				use_proxy=False,
+				persist_profile=False,
+			),
 			'agentrouter': ProviderConfig(
 				name='agentrouter',
 				domain='https://agentrouter.org',
@@ -192,7 +204,7 @@ def load_accounts_config() -> list[AccountConfig] | None:
 				AccountConfig(
 					cookies=cookie,
 					api_user=api_user,
-					provider='anyrouter',
+					provider='anyrouter_direct',
 					name='AnyRouter',
 				)
 			]

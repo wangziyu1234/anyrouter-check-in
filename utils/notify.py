@@ -80,7 +80,17 @@ class NotificationKit:
 			raise ValueError('PushPlus Token not configured')
 
 		data = {'token': self.pushplus_token, 'title': title, 'content': content, 'template': 'html'}
-		self._post_json('PushPlus', 'http://www.pushplus.plus/send', data)
+		response = self._post_json('PushPlus', 'http://www.pushplus.plus/send', data)
+		# PushPlus returns code 200 on success, not 0
+		try:
+			result = response.json()
+			if result.get('code') not in (0, 200):
+				error_msg = result.get('msg') or 'Unknown error'
+				raise RuntimeError(f'PushPlus failed: {error_msg}')
+		except ValueError:
+			# If response is not JSON, check status code
+			if response.status_code >= 400:
+				raise RuntimeError(f'PushPlus request failed: HTTP {response.status_code}')
 
 	def send_serverPush(self, title: str, content: str):
 		if not self.server_push_key:

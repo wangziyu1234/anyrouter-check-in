@@ -246,15 +246,25 @@ def get_user_info(client, headers, user_info_url: str):
 			data = response.json()
 			if data.get('success'):
 				user_data = data.get('data', {})
-				quota = round(user_data.get('quota', 0) / 500000, 2)
-				used_quota = round(user_data.get('used_quota', 0) / 500000, 2)
+				quota = user_data.get('quota', 0)
+				used_quota = user_data.get('used_quota', 0)
+				# Handle division by zero and invalid values
+				if not isinstance(quota, (int, float)) or not isinstance(used_quota, (int, float)):
+					return {'success': False, 'error': 'Invalid quota values in response'}
+				quota = round(quota / 500000, 2)
+				used_quota = round(used_quota / 500000, 2)
 				return {
 					'success': True,
 					'quota': quota,
 					'used_quota': used_quota,
 					'display': f':money: Current balance: ${quota}, Used: ${used_quota}',
 				}
+			# API returned success=false, extract error message
+			error_msg = data.get('msg') or data.get('message') or data.get('error') or 'API returned false'
+			return {'success': False, 'error': f'Failed to get user info: {error_msg}'}
 		return {'success': False, 'error': f'Failed to get user info: HTTP {response.status_code}'}
+	except json.JSONDecodeError as e:
+		return {'success': False, 'error': f'Failed to get user info: Invalid JSON response - {str(e)[:30]}'}
 	except Exception as e:
 		return {'success': False, 'error': f'Failed to get user info: {str(e)[:50]}...'}
 

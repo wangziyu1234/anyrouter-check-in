@@ -295,27 +295,40 @@ def execute_check_in(client, account_name: str, provider_config, headers: dict):
 	if response.status_code == 200:
 		try:
 			result = response.json()
+			# Check for success indicators in the response
 			if result.get('ret') == 1 or result.get('code') == 0 or result.get('success'):
 				print(f'[SUCCESS] {account_name}: Check-in successful!')
 				return True
-			else:
-				error_msg = result.get('msg', result.get('message', 'Unknown error'))
-				already_checked_keywords = ['已经签到', '已签到', '重复签到', 'already checked', 'already signed']
-				if any(keyword in error_msg.lower() for keyword in already_checked_keywords):
-					print(f'[SUCCESS] {account_name}: Already checked in today')
-					return True
-				print(f'[FAILED] {account_name}: Check-in failed - {error_msg}')
-				return False
+
+			# Extract error message from response
+			error_msg = result.get('msg') or result.get('message') or 'Unknown error'
+			if not isinstance(error_msg, str):
+				error_msg = str(error_msg)
+
+			# Check if already checked in today
+			already_checked_keywords = ['已经签到', '已签到', '重复签到', 'already checked', 'already signed']
+			if any(keyword in error_msg.lower() for keyword in already_checked_keywords):
+				print(f'[SUCCESS] {account_name}: Already checked in today')
+				return True
+
+			print(f'[FAILED] {account_name}: Check-in failed - {error_msg}')
+			return False
 		except json.JSONDecodeError:
+			# Handle non-JSON responses
 			if provider_config.name == 'anyrouter_direct':
 				print(f'[SUCCESS] {account_name}: Check-in returned HTTP 200 without JSON, treated as successful')
 				return True
-			if 'success' in response.text.lower():
+
+			# Check if response contains success indicator
+			response_text_lower = response.text.lower().strip()
+			if response_text_lower in ('success', 'ok', 'true', '1') or 'success' in response_text_lower:
 				print(f'[SUCCESS] {account_name}: Check-in successful!')
 				return True
-			else:
-				print(f'[FAILED] {account_name}: Check-in failed - Invalid response format')
-				return False
+
+			print(f'[FAILED] {account_name}: Check-in failed - Invalid response format')
+			if is_debug_enabled():
+				debug_print(f'[INFO] {account_name}: Response text: {response.text[:200]}')
+			return False
 	else:
 		print(f'[FAILED] {account_name}: Check-in failed - HTTP {response.status_code}')
 		return False

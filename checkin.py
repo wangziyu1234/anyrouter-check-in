@@ -81,8 +81,11 @@ def parse_cookies(cookies_data):
 		cookies_dict = {}
 		for cookie in cookies_data.split(';'):
 			if '=' in cookie:
-				key, value = cookie.strip().split('=', 1)
-				cookies_dict[key] = value
+				key, value = cookie.split('=', 1)
+				key = key.strip()
+				value = value.strip()
+				if key:  # Only add non-empty keys
+					cookies_dict[key] = value
 		return cookies_dict
 	return {}
 
